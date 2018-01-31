@@ -1,0 +1,15 @@
+﻿@model Bookstore.Models.Book
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>@Model.Name</h2>
+<hr />
+<p>
+    @Html.ActionLink("Create New", "Create", new { bookId = Model.Id} )
+</p>
+
+@Html.Partial("_Review", Model.Reviews)
+
+@Html.ActionLink("Go back to book list", "Index", "Books")
