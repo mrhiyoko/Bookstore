@@ -8,5 +8,6 @@ namespace Bookstore.Models
     public class Category : IEntity
     {
         public string Name { get; set; }
+        public virtual ICollection<Book> Books { get; set; }
     }
 }

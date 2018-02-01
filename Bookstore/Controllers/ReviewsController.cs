@@ -7,6 +7,7 @@ using System.Web.Mvc;
 
 namespace Bookstore.Controllers
 {
+    [Authorize]
     public class ReviewsController : BaseController
     {
         // GET: Reviews

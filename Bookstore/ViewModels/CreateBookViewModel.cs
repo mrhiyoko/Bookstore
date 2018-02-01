@@ -4,15 +4,14 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace Bookstore.Models
+namespace Bookstore.ViewModels
 {
-    public class Book : IEntity
+    public class CreateBookViewModel
     {
-        
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
         public int CategoryId { get; set; }
-        public virtual ICollection<Review> Reviews { get; set; }
+        public IEnumerable<SelectListItem> Categories { get; set; }
     }
 }

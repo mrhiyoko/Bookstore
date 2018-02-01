@@ -7,17 +7,30 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Bookstore.Models;
+using Bookstore.ViewModels;
 
 namespace Bookstore.Controllers
 {
-    public class BooksController : Controller
+    public class BooksController : BaseController
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Books
-        public ActionResult Index()
+        public ActionResult Index(int? categoryId = null)
         {
-            return View(db.Books.ToList());
+            IEnumerable<Book> books;
+
+            if (categoryId.HasValue)
+            {
+                if(_db.Categories.Any(c => c.Id == categoryId.Value))
+                {
+                    books = _db.Books.Where(p => p.CategoryId == categoryId.Value);
+                    return View(books);
+                }
+                    
+            }
+            books = _db.Books;
+
+            return View(books);
         }
 
         // GET: Books/Details/5
@@ -27,7 +40,7 @@ namespace Bookstore.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Book book = db.Books.Find(id);
+            Book book = _db.Books.Find(id);
             if (book == null)
             {
                 return HttpNotFound();
@@ -36,9 +49,14 @@ namespace Bookstore.Controllers
         }
 
         // GET: Books/Create
+        [Authorize(Roles="Admin")]
         public ActionResult Create()
         {
-            return View();
+            var model = new CreateBookViewModel();
+
+            model.Categories = _db.Categories.Select(c => new SelectListItem { Text = c.Name, Value = c.Id.ToString() });
+
+            return View(model);
         }
 
         // POST: Books/Create
@@ -46,12 +64,13 @@ namespace Bookstore.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Description,Price")] Book book)
+        [Authorize(Roles="Admin")]
+        public ActionResult Create([Bind(Include = "Id,Name,Description,Price,CategoryId")] Book book)
         {
             if (ModelState.IsValid)
             {
-                db.Books.Add(book);
-                db.SaveChanges();
+                _db.Books.Add(book);
+                _db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
@@ -59,13 +78,14 @@ namespace Bookstore.Controllers
         }
 
         // GET: Books/Edit/5
+        [Authorize(Roles="Admin")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Book book = db.Books.Find(id);
+            Book book = _db.Books.Find(id);
             if (book == null)
             {
                 return HttpNotFound();
@@ -78,25 +98,27 @@ namespace Bookstore.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles="Admin")]
         public ActionResult Edit([Bind(Include = "Id,Name,Description,Price")] Book book)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(book).State = EntityState.Modified;
-                db.SaveChanges();
+                _db.Entry(book).State = EntityState.Modified;
+                _db.SaveChanges();
                 return RedirectToAction("Index");
             }
             return View(book);
         }
 
         // GET: Books/Delete/5
+        [Authorize(Roles="Admin")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Book book = db.Books.Find(id);
+            Book book = _db.Books.Find(id);
             if (book == null)
             {
                 return HttpNotFound();
@@ -107,21 +129,14 @@ namespace Bookstore.Controllers
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles ="Admin")]
         public ActionResult DeleteConfirmed(int id)
         {
-            Book book = db.Books.Find(id);
-            db.Books.Remove(book);
-            db.SaveChanges();
+            Book book = _db.Books.Find(id);
+            _db.Books.Remove(book);
+            _db.SaveChanges();
             return RedirectToAction("Index");
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
     }
 }

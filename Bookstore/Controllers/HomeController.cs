@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bookstore.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,9 +9,14 @@ namespace Bookstore.Controllers
 {
     public class HomeController : BaseController
     {
-        public ActionResult Index()
+        public ActionResult Index(string search = null)
         {
-            var model = _db.Categories.ToList();
+            IEnumerable<Category> model;
+
+            if (!string.IsNullOrEmpty(search))
+                model = _db.Categories.Where(c => c.Name.Contains(search)).ToList();
+            else
+                model = _db.Categories.ToList();
             return View(model);
         }
 
